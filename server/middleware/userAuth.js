@@ -21,9 +21,14 @@ export const authenticateUser = (req, res, next) => {
 
 export const authorizePermissions = (...roles) => {
   return (req, res, next) => {
-    console.log(roles);
+    console.log("Authorize roles required:", roles);
+    if (!req.user) {
+      return next(new UnauthorizedError("No user info found in request"));
+    }
+
+    console.log("User role:", req.user.role);
     if (!roles.includes(req.user.role)) {
-      throw new UnauthorizedError("not authorized to access this route");
+      return next(new UnauthorizedError("Not authorized to access this route"));
     }
     next();
   };
