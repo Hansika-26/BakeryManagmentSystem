@@ -4,9 +4,9 @@ import userModel from '../model/userModel.js';
 import transporter from '../config/nodemailer.js';
 
 export const register = async (req, res) => {
-    const {name, email, password} = req.body;
+    const {name, email, password, role} = req.body;
 
-    if(!name || !email || !password){
+    if(!name || !email || !password || !role){
         return res.json({success: false, message: 'Missing Details'})
     }
 
@@ -20,7 +20,7 @@ export const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const user = new userModel({name,email, password: hashedPassword});
+        const user = new userModel({name,email, password: hashedPassword, role});
 
         await user.save();
 
@@ -77,7 +77,7 @@ export const login = async (req, res) => {
              return res.json({success: false, message: 'Invalid password'});
         }
 
-        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '7d'});
+        const token = jwt.sign({userId: user._id, role: user.role }, process.env.JWT_SECRET, {expiresIn: '7d'});
 
         res.cookie('token', token, {
             httpOnly: true,
@@ -118,7 +118,7 @@ export const logout = async (req, res) => {
 
 export const sendVerifyOtp = async (req, res) => {
     try {
-        const userId = req.userId;
+        const userId = req.user.userId;
         const user = await userModel.findById(userId);
         if(user.isAccountVerified){
             return res.json({success: false, message: "Account Alreday Verified"})
@@ -150,7 +150,7 @@ export const sendVerifyOtp = async (req, res) => {
 //verify email using OTP
 export const verifyEmail = async (req,res) => {
     const {otp} = req.body;
-    const userId = req.userId;
+    const userId = req.user.userId;
     if(!userId || !otp) {
         return res.json({success: false, message: 'Missing Details' });
 

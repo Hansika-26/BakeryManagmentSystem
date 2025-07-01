@@ -1,29 +1,30 @@
-import jwt from 'jsonwebtoken';
+import { verifyJWT } from "../Utils/tokenUtils.js";
+import {
+  UnauthenticatedError,
+  UnauthorizedError,
+} from "../errors/customErrors.js";
 
- const userAuth = async (req, res, next) => {
-    const {token} = req.cookies;
+export const authenticateUser = (req, res, next) => {
+  console.log("authenticating user");
+  const { token } = req.cookies;
+  if (!token) throw new UnauthenticatedError("authentication Invalid");
 
-    if (!token) {
-        return res.json({success: false, message: 'Not Authorized, Login Again'});
+  try {
+    const { userId, role } = verifyJWT(token);
+    req.user = { userId, role };
+
+    next();
+  } catch (error) {
+    throw new UnauthenticatedError("authentication Invalid");
+  }
+};
+
+export const authorizePermissions = (...roles) => {
+  return (req, res, next) => {
+    console.log(roles);
+    if (!roles.includes(req.user.role)) {
+      throw new UnauthorizedError("not authorized to access this route");
     }
-
-    try {
-
-        const tokenDecode = jwt.verify(token, process.env.JWT_SECRET);
-
-        if(tokenDecode.id){
-            req.userId = tokenDecode.id;
-        } else {
-            return res.json({success: false, message: 'Not Authorized, Login Again'});
-        }
-
-        next();
-
-    } catch (error) {
-        return res.json({success: false, message: error.message });
-
-    }
-
- }
-
- export default userAuth;
+    next();
+  };
+};
