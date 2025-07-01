@@ -1,8 +1,12 @@
 import React, { useContext } from 'react'
 import { assets } from '../assets/assets';
 import { AppContext } from '../context/AppContext';
+import { useNavigate } from 'react-router-dom';
+
 
 const Header = () => {
+
+  const navigate = useNavigate();
 
   const {userData} = useContext(AppContext)
   return (
@@ -14,7 +18,7 @@ const Header = () => {
         <img className='w-8 aspect-squre' src={assets.hand_wave} /></h1>
       <h2 className='text-3xl sm:text-5xl font -semibold mb-4'>Welcome to our app</h2>
       <p className='mb-8 max-w-md'>let's start with quick product tour and we will have you up and running in no time!</p>
-      <button className='border border-gray-500 rounded-full px-8 py-2.5 hover:bg-gray-100 transition-all'>Get started</button>
+      <button onClick={() => navigate('/admin')} className='border border-gray-500 rounded-full px-8 py-2.5 hover:bg-gray-100 transition-all'>Get started</button>
     </div>
   )
 }

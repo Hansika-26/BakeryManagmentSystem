@@ -7,6 +7,12 @@ import hand_wave from './hand_wave.png'
 import header_img from './header_img.png'
 import LogoImage from './LogoImage.jpeg'
 import welcome from './welcome.jpeg'
+import cake from './cake.png'
+import Buns from './Buns.jpeg'
+import donuts from './donuts.jpeg'
+import rolls from './rolls.jpeg'
+import VanilaDonut from './VanilaDonut.jpeg'
+import FishBun from './FishBun.jpeg'
 
 export const assets = {
     arrow_icon,
@@ -17,6 +23,12 @@ export const assets = {
     hand_wave,
     header_img,
     LogoImage,
-    welcome
+    welcome,
+    cake,
+    Buns,
+    donuts,
+    rolls,
+    VanilaDonut,
+    FishBun
 
 }
