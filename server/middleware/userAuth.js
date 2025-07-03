@@ -5,7 +5,7 @@ import {
 } from "../errors/customErrors.js";
 
 export const authenticateUser = (req, res, next) => {
-  console.log("authenticating user");
+ // console.log("authenticating user");
   const { token } = req.cookies;
   if (!token) throw new UnauthenticatedError("authentication Invalid");
 

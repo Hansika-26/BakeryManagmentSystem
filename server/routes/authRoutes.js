@@ -9,6 +9,7 @@ import {
   sendVerifyOtp,
   verifyEmail
 } from '../controllers/authController.js';
+//import { loginValidator } from '../validator/authValidator.js';
 
 import { authenticateUser } from "../middleware/userAuth.js";
 

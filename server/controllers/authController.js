@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userModel from '../model/userModel.js';
 import transporter from '../config/nodemailer.js';
+import { registerSchema, loginValidator } from '../validators/authValidator.js';
 
 // Generate JWT Token
 const generateToken = (user) => {
@@ -14,14 +15,28 @@ const generateToken = (user) => {
 
 //  Register User
 export const register = async (req, res) => {
-  const { name, email, password, role } = req.body;
 
-  if (!name || !email || !password || !role) {
-    return res.status(400).json({ success: false, message: 'Missing Details' });
+ // Validate request using Joi schema
+  const { error, value } = registerSchema.validate(req.body, { abortEarly: false });
+
+  if (error) {
+    const errors = error.details.map(detail => detail.message);
+    return res.status(400).json({ success: false, message: 'Validation Error', errors });
   }
+
+  const { name, email, password, role } = value;
+
+  //console.log("Registering user:", value);
+
+  // const { name, email, password, role } = req.body;
+
+  // if (!name || !email || !password || !role) {
+  //   return res.status(400).json({ success: false, message: 'Missing Details' });
+  // }
 
   try {
     const existingUser = await userModel.findOne({ email });
+    //console.log("Registering user:", existingUser);
     if (existingUser) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
@@ -45,7 +60,7 @@ export const register = async (req, res) => {
       from: process.env.SENDER_EMAIL,
       to: email,
       subject: 'Welcome to our service',
-      text: `Welcome to our website. Your account has been created with email: ${email}`,
+      text: `Welcome to our website. Your account has been created with email: ${email}`, 
     };
 
     try {
@@ -63,14 +78,22 @@ export const register = async (req, res) => {
 
 // Login User
 export const login = async (req, res) => {
+  // TODO : add validation for login
   const { email, password } = req.body;
+  const { error } = loginValidator.validate({ email, password });
+  if (error) {
+    return res.status(400).json({ success: false, message: error.details[0].message });
+  }
+
+   
 
   if (!email || !password)
     return res.status(400).json({ success: false, message: 'Email and password are required' });
 
   try {
-    const user = await userModel.findOne({ email });
+    const user = await userModel.findOne({ email }); 
     if (!user) return res.status(400).json({ success: false, message: 'Invalid email' });
+
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ success: false, message: 'Invalid password' });
