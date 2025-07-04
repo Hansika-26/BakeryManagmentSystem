@@ -9,6 +9,7 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 
 const app = express();
+//app.use(express.json());
 const port = process.env.PORT || 4000;
 
 // Connect to DB
