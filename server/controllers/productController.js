@@ -83,7 +83,7 @@ export const addProduct = async (req, res) => {
 
 */
 
-
+/*
 export const addProduct = async (req, res) => {
   try {
     const { name, description, price, image, category } = req.body;
@@ -113,6 +113,47 @@ export const addProduct = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+*/
+export const addProduct = async (req, res) => {
+  try {
+    const { name, description, price, category } = req.body;
+
+    // ✅ Image uploaded by multer, file path contains Cloudinary URL
+    const image = req.file?.path;
+
+    const { error } = addProductValidator.validate({ name, description, price, image, category });
+    if (error) {
+      return res.status(400).json({ success: false, message: error.details[0].message });
+    }
+
+    // ✅ 2. Check if category exists
+    const categoryExists = await Category.findById(category);
+    if (!categoryExists) {
+      return res.status(404).json({ success: false, message: 'Category does not exist' });
+    }
+
+    
+
+    const product = new Product({
+      name,
+      description,
+      price,
+      image, // Cloudinary URL
+      category,
+    });
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Product added with image',
+      product,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 
 /*
 export const updateProduct = async (req, res) => {
@@ -157,7 +198,10 @@ export const updateProduct = async (req, res) => {
     console.log("🟡 Incoming req.body:", req.body);
   try {
     const { id } = req.params;
-    const { name, description, price, image, category } = req.body;
+    const { name, description, price, category } = req.body;
+
+     // ✅ Image uploaded by multer, file path contains Cloudinary URL
+    const image = req.file?.path;
     
     // ✅ 1. Validate request body
     const { error } = updateProductValidator.validate({ name, description, price, image, category });

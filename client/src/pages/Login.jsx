@@ -38,7 +38,13 @@ const Login = () => {
           if(data.success){
             setIsLoggedin(true)
             getUserData()
-            navigate('/')
+            if (data.role === 'admin') {
+              navigate('/admin')
+              
+            }else{
+              navigate('/')
+            }
+            
           }else {
             toast.error(data.message)
           }

@@ -64,3 +64,28 @@ export const loginValidator = Joi.object({
       }),
 
 })
+
+
+export const updateUserProfileValidator = Joi.object({
+  name: Joi.string()
+    .min(2)
+    .max(50)
+    .messages({
+      'string.base': 'Name must be a string',
+      'string.min': 'Name must be at least 2 characters',
+      'string.max': 'Name must not exceed 50 characters',
+    }),
+
+  email: Joi.string()
+    .email({ tlds: { allow: false } })
+    .messages({
+      'string.email': 'Email must be a valid format',
+    }),
+
+  password: Joi.string()
+    .pattern(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{6,}$/)
+    .messages({
+      'string.pattern.base':
+        'Password must include letters, numbers, and special characters',
+    }),
+});
