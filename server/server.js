@@ -8,6 +8,8 @@ import userRouter from "./routes/userRoutes.js";
 import categoryRoutes from './routes/categoryRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 
+//const cors = require('cors');
+  
 const app = express();
 //app.use(express.json());
 const port = process.env.PORT || 4000;

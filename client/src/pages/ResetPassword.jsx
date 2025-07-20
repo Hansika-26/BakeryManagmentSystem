@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import Bakery from '../assets/Bakery.avif';
 
 
 const ResetPassword = () => {
@@ -80,7 +81,10 @@ const ResetPassword = () => {
     }
   }
   return (
-    <div className='flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 to-white-900'>
+      <div
+      className="flex items-center justify-center min-h-screen px-6 sm:px-0 bg-cover bg-center"
+      style={{ backgroundImage: `url(${Bakery})` }}
+    >
       <img onClick={()=>navigate('/')}src={assets.LogoImage} alt="" className='absolute left-5 sm:left-20
                     top-5 w-28 sm:w-32 cursor-pointer' />
     {/*enter email id*/}

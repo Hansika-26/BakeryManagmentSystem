@@ -16,9 +16,18 @@ const Header = () => {
 
       <h1 className='flex items-center gap-2 text-xl sm: text-3xl font-medium mb-2'>Hey {userData ? userData.name : 'Consumer'} 
         <img className='w-8 aspect-squre' src={assets.hand_wave} /></h1>
-      <h2 className='text-3xl sm:text-5xl font -semibold mb-4'>Welcome to our app</h2>
+      <h2 className='text-3xl sm:text-5xl font -semibold mb-4'>Welcome to our Bakery Shop</h2>
       <p className='mb-8 max-w-md'>let's start with quick product tour and we will have you up and running in no time!</p>
-      <button onClick={() => navigate('/admin')} className='border border-gray-500 rounded-full px-8 py-2.5 hover:bg-gray-100 transition-all'>Get started</button>
+      {/*<button onClick={() => navigate('/user/dashboard')} className='border border-gray-500 rounded-full px-8 py-2.5 hover:bg-gray-100 transition-all'>Get started</button>*/}
+      <button onClick={() => {
+                  if (userData?.role === 'admin') {
+                    navigate('/admin/dashboard');
+                  } else {
+                    navigate('/user/dashboard');
+                  }
+                }} className="border border-gray-500 rounded-full px-8 py-2.5 hover:bg-gray-100 transition-all" >Get Started
+            </button>
+
     </div>
   )
 }

@@ -13,6 +13,8 @@ import donuts from './donuts.jpeg'
 import rolls from './rolls.jpeg'
 import VanilaDonut from './VanilaDonut.jpeg'
 import FishBun from './FishBun.jpeg'
+import Bakery from './Bakery.avif'
+import person from './person.png'
 
 export const assets = {
     arrow_icon,
@@ -29,6 +31,8 @@ export const assets = {
     donuts,
     rolls,
     VanilaDonut,
-    FishBun
+    FishBun,
+    Bakery,
+    person
 
 }

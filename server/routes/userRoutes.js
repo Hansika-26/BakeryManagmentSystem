@@ -1,5 +1,5 @@
 import express from 'express';
-import { getAllUsers,getCurrentUser, updateUserProfile, deleteUserProfile  } from '../controllers/userController.js';
+import { getAllUsers, getCurrentUser, updateUserProfile, deleteUserProfile  } from '../controllers/userController.js';
 import { authenticateUser } from '../middleware/userAuth.js';
 //import User from '../model/userModel.js';
 //import bcrypt from 'bcryptjs';

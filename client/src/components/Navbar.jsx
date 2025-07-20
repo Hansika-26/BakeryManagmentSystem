@@ -5,6 +5,7 @@ import { AppContext } from '../context/AppContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
+
 const Navbar = () => {
 
     const navigate = useNavigate()
@@ -18,7 +19,7 @@ const Navbar = () => {
 
         if(data.success){
         navigate('/email-verify')
-        toast.success(datamessage)
+        toast.success(data.message);
         }else {
           toast.error(data.message)
         }
@@ -49,7 +50,7 @@ const Navbar = () => {
       <img src={assets.LogoImage} alt="" className='w-38 sm:w-28'/>
       {userData ? 
       <div className='w-8 h-8 flex justify-center items-center rounded-full bg-black text-white relative group'>
-        {userData.name[0].toUpperCase()}
+        {userData?.name ? userData.name[0].toUpperCase() : "?"}
         <div className='absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-10'>
           <ul className='list-none m-0 p-2 bg-gray-100 text-sm'>
             {!userData.isAccountVerified &&  <li onClick={sendVerificationOtp} className='py-1 px-2 hover:bg-gray-200 
