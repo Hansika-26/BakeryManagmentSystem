@@ -115,6 +115,7 @@ export const login = async (req, res) => {
       email: user.email,
     },
   });
+  
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }

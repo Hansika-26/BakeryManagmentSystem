@@ -15,6 +15,8 @@ import VanilaDonut from './VanilaDonut.jpeg'
 import FishBun from './FishBun.jpeg'
 import Bakery from './Bakery.avif'
 import person from './person.png'
+import bgHero from './bgHero.jpeg'
+import Hero from './Hero.jpeg'
 
 export const assets = {
     arrow_icon,
@@ -33,6 +35,8 @@ export const assets = {
     VanilaDonut,
     FishBun,
     Bakery,
-    person
+    person,
+    bgHero,
+    Hero
 
 }

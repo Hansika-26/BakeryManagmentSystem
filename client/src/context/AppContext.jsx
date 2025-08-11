@@ -4,27 +4,32 @@ import { toast } from "react-toastify";
 
 export const AppContext = createContext();
 
-export const AppContextProvider = (props) => {
+export const AppContextProvider = ({ children }) => {
   axios.defaults.withCredentials = true;
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
   const [isLoggedin, setIsLoggedin] = useState(false);
-  const [userData, setUserData] = useState(null); // changed from false to null
+  const [userData, setUserData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const getAuthState = async () => {
     try {
+      setIsLoading(true);
       const { data } = await axios.get(backendUrl + "/api/auth/is-auth");
       if (data.success) {
         setIsLoggedin(true);
-        getUserData();
+        await getUserData();
       } else {
         setIsLoggedin(false);
         setUserData(null);
+        toast.error(data.message || "Authentication check failed");
       }
     } catch (error) {
       setIsLoggedin(false);
       setUserData(null);
-      toast.error(error.message);
+      toast.error(error.message || "Failed to check authentication");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -34,15 +39,15 @@ export const AppContextProvider = (props) => {
       if (data.success) {
         setUserData(data.userData);
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Failed to fetch user data");
       }
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Failed to fetch user data");
     }
   };
 
   useEffect(() => {
-    getAuthState(); // ✅ Only call auth and let it call getUserData
+    getAuthState();
   }, []);
 
   const value = {
@@ -52,11 +57,12 @@ export const AppContextProvider = (props) => {
     userData,
     setUserData,
     getUserData,
+    isLoading,
   };
 
   return (
     <AppContext.Provider value={value}>
-      {props.children}
+      {children}
     </AppContext.Provider>
   );
 };
