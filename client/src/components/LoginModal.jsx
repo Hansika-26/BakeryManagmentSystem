@@ -68,30 +68,38 @@ const LoginModal = ({ isOpen, onClose, onForgotPassword }) => {
         if (response.data.msg === "User logged in") { // Check msg instead of success
           toast.success("Login successful!");
           await getUserData();
-          setIsLoggedin(true);
-          onClose();
+          setIsLoggedin(true); // This triggers Navbar re-render if it depends on isLoggedin
+
+          onClose(); // Close modal after successful login and data fetch
+
+          // Small delay to allow state to propagate before routing if needed, 
+          // though React state updates are batched.
           setTimeout(() => {
+            // Force check if needed or just navigate
+            // Navbar should check 'userData' or 'isLoggedin'
+
             switch (response.data.user.role) {
               case "admin":
                 navigate("/admin/dashboard");
-                window.location.reload();
+                // Remove window.location.reload() to let SPA handle state
                 break;
               case "user":
                 navigate("/");
-                window.location.reload();
+                // Remove window.location.reload() to let SPA handle state
                 break;
               default:
                 navigate("/");
             }
-          }, 500);
+          }, 100);
         } else {
           toast.error(response.data.msg || "Login failed");
         }
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login error details:', error);
       if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.msg || "Operation failed";
+        const errorMessage = error.response?.data?.message || error.response?.data?.msg || "Operation failed";
+        console.log("Extracted error message:", errorMessage);
         toast.error(errorMessage);
       } else {
         toast.error(error.message || "Something went wrong. Please try again.");
@@ -104,7 +112,7 @@ const LoginModal = ({ isOpen, onClose, onForgotPassword }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white border border-gray-200 p-10 rounded-lg shadow-2xl w-full sm:w-96 text-gray-700 text-sm relative">
-        <button 
+        <button
           onClick={onClose}
           className="absolute top-2 right-2 text-gray-400 hover:text-white"
         >
@@ -153,7 +161,7 @@ const LoginModal = ({ isOpen, onClose, onForgotPassword }) => {
               required
             />
           </div>
-          <p 
+          <p
             onClick={() => {
               onClose();
               if (onForgotPassword) {
@@ -161,7 +169,7 @@ const LoginModal = ({ isOpen, onClose, onForgotPassword }) => {
               } else {
                 navigate('/reset-password');
               }
-            }} 
+            }}
             className="mb-4 text-blue-400 cursor-pointer hover:text-blue-300"
           >
             Forgot password

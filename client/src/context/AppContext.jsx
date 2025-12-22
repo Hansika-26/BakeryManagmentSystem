@@ -25,9 +25,10 @@ export const AppContextProvider = ({ children }) => {
         toast.error(data.message || "Authentication check failed");
       }
     } catch (error) {
+      console.error("Auth check failed:", error.message);
       setIsLoggedin(false);
       setUserData(null);
-      toast.error(error.message || "Failed to check authentication");
+      // toast.error(error.message || "Failed to check authentication"); 
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +38,7 @@ export const AppContextProvider = ({ children }) => {
     try {
       const { data } = await axios.get(backendUrl + "/api/user/data");
       if (data.success) {
-        setUserData(data.userData);
+        setUserData(data.user);
       } else {
         toast.error(data.message || "Failed to fetch user data");
       }

@@ -67,21 +67,31 @@ const Navbar = () => {
 
       {/* Right - Login/Profile */}
       {userData ? (
-        <div className="w-8 h-8 flex justify-center items-center rounded-full bg-black text-white relative group cursor-pointer">
+        <div
+          onClick={() => navigate('/profile')}
+          className="w-8 h-8 flex justify-center items-center rounded-full bg-black text-white relative group cursor-pointer"
+        >
           {userData?.name ? userData.name[0].toUpperCase() : "?"}
           <div className="absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-10">
             <ul className="list-none m-0 p-2 bg-gray-100 text-sm shadow-lg">
-              
+              {userData.role === 'admin' && (
+                <li
+                  onClick={(e) => { e.stopPropagation(); navigate('/admin/dashboard'); }}
+                  className="py-1 px-2 hover:bg-gray-200 cursor-pointer"
+                >
+                  Admin Dashboard
+                </li>
+              )}
               {!userData.isAccountVerified && (
                 <li
-                  onClick={sendVerificationOtp}
+                  onClick={(e) => { e.stopPropagation(); sendVerificationOtp(); }}
                   className="py-1 px-2 hover:bg-gray-200 cursor-pointer"
                 >
                   Verify email
                 </li>
               )}
               <li
-                onClick={Logout}
+                onClick={(e) => { e.stopPropagation(); Logout(); }}
                 className="py-1 px-2 hover:bg-gray-200 cursor-pointer"
               >
                 Logout

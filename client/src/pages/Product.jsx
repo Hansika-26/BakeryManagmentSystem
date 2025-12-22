@@ -50,7 +50,7 @@ const Product = () => {
   }, [searchQuery, products]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-amber-50">
       <Navbar />
 
       <div className="pt-24 px-6">
