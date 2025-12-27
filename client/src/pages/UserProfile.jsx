@@ -1,13 +1,32 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { AppContext } from '../context/AppContext';
+import { CartContext } from '../context/CartContext';
 import { assets } from '../assets/assets';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { FaShoppingCart, FaBox, FaUser, FaSignOutAlt, FaBars, FaLock, FaEye, FaEyeSlash, FaEdit, FaSave, FaTimes, FaTrash } from 'react-icons/fa';
+import { HiViewGrid } from 'react-icons/hi';
 
 const UserProfile = () => {
-  const { userData, backendUrl, getUserData, setUserData } = useContext(AppContext);
+  const { userData, backendUrl, getUserData, setUserData, setIsLoggedin } = useContext(AppContext);
+  const { cartCount } = useContext(CartContext);
   const navigate = useNavigate();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      const { data } = await axios.post(`${backendUrl}/api/auth/logout`, {}, { withCredentials: true });
+      if (data.success) {
+        setIsLoggedin(false);
+        setUserData(null);
+        toast.success("Logged out successfully");
+        navigate('/');
+      }
+    } catch (error) {
+      toast.error("Logout failed");
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: '',
@@ -15,7 +34,19 @@ const UserProfile = () => {
     role: ''
   });
 
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
   const [isEditing, setIsEditing] = useState(false);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +105,42 @@ const UserProfile = () => {
     }
   };
 
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("New passwords don't match!");
+      return;
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters long");
+      return;
+    }
+
+    try {
+      axios.defaults.withCredentials = true;
+      const { data } = await axios.put(`${backendUrl}/api/user/change-password`, {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      });
+
+      if (data.success) {
+        toast.success("Password changed successfully!");
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+        setShowPasswordForm(false);
+      } else {
+        toast.error(data.message || "Password change failed");
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Error changing password");
+    }
+  };
+
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete your profile? This cannot be undone.")) {
       try {
@@ -93,147 +160,319 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Top Navbar */}
-      <nav className="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-30 w-full">
-        <div className="flex items-center space-x-3">
-          <img src={assets.LogoImage} alt="Bakery Logo" className="h-10" />
-          <h1 className="text-2xl font-bold text-gray-800">Bakery User Profile</h1>
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
+      {/* 🌟 Modern Top Navbar */}
+      <nav className="bg-white/80 backdrop-blur-md shadow-sm px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-40 border-b border-amber-100">
+        <div className="flex items-center gap-4">
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="md:hidden p-2 rounded-lg hover:bg-amber-100 text-gray-600 transition-colors"
+          >
+            <FaBars size={20} />
+          </button>
+
+          {/* Logo */}
+          <div
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => navigate('/user/dashboard')}
+          >
+            <img
+              src={assets.LogoImage}
+              alt="Bakery Logo"
+              className="h-12 w-12 md:h-14 md:w-14 rounded-full shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-105"
+            />
+          </div>
         </div>
-        <div className="space-x-6 font-medium text-gray-700 text-sm">
-          <button onClick={() => navigate('/')} className="hover:text-green-600">Home</button>
-          <button onClick={() => navigate('/orders')} className="hover:text-green-600">Orders</button>
-          <button onClick={() => navigate('/FAQ')} className="hover:text-green-600">FAQ</button>
-          <button onClick={() => navigate('/contact')} className="hover:text-green-600">Contact</button>
-          <button onClick={() => navigate('/about')} className="hover:text-green-600">About</button>
-          <button onClick={() => navigate('/login')} className="hover:text-green-600 bg-gray-300 p-2 rounded w-38 h-9">LogOut</button>
+
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Cart Button */}
+          <button
+            onClick={() => navigate('/cart')}
+            className="relative p-2.5 rounded-full hover:bg-amber-100 text-gray-600 hover:text-amber-600 transition-all group"
+          >
+            <FaShoppingCart size={20} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-md">
+                {cartCount > 9 ? '9+' : cartCount}
+              </span>
+            )}
+          </button>
+
+          {/* User Profile - Active */}
+          <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
+            <div className="hidden md:block text-right">
+              <p className="text-sm font-medium text-gray-700">{userData?.name || 'User'}</p>
+              <p className="text-xs text-gray-500">My Profile</p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-bold shadow-md ring-2 ring-amber-200">
+              {userData?.name ? userData.name[0].toUpperCase() : 'U'}
+            </div>
+          </div>
         </div>
       </nav>
 
       <div className="flex">
-        {/* Sidebar */}
-        {/* Sidebar */}
-        <aside className="w-64 bg-[#5D4037] border-r border-[#795548] text-white min-h-[calc(100vh-64px)] p-4 flex flex-col sticky top-16 transition-all duration-300">
+        {/* 📂 Modern Sidebar */}
+        <aside className={`${sidebarCollapsed ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:static inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-[#5D4037] to-[#4E342E] text-white min-h-[calc(100vh-65px)] flex flex-col transition-all duration-300 shadow-xl md:shadow-none`}>
 
-          <div className="mb-6 flex items-center gap-3 pb-4 border-b border-[#795548]">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-600 to-amber-700 flex items-center justify-center font-bold text-sm text-white shadow-lg border border-amber-200">
-              {formData.name ? formData.name[0].toUpperCase() : 'U'}
+          {/* User Card */}
+          <div className="p-5 m-4 bg-white/10 backdrop-blur rounded-2xl border border-white/20">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center font-bold text-xl text-white shadow-lg">
+                {userData?.name ? userData.name[0].toUpperCase() : '👤'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-white font-semibold truncate">{userData?.name || 'User'}</h2>
+                <p className="text-amber-200/80 text-xs truncate">{userData?.email || 'user@email.com'}</p>
+              </div>
             </div>
-            <h2 className="text-lg font-bold tracking-wide">User Panel</h2>
           </div>
 
-          <nav className="flex flex-col gap-2 flex-1">
-            <button onClick={() => navigate('/profile')} className="group flex items-center gap-3 p-3 rounded-xl text-amber-50 hover:bg-[#4E342E] hover:text-white transition-all duration-200 text-left">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-hover:scale-105" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-              My Profile
-            </button>
+          {/* Navigation */}
+          <nav className="flex-1 px-4 pb-4">
+            <div className="space-y-1">
+              {/* Products */}
+              <button
+                onClick={() => navigate('/user/dashboard')}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-amber-100 hover:bg-white/10 hover:text-white transition-all group"
+              >
+                <HiViewGrid size={20} className="group-hover:scale-110 transition-transform" />
+                <span className="font-medium">Browse Products</span>
+              </button>
 
-            <button onClick={() => {
-              if (userData?.role === 'admin') {
-                navigate('/admin/dashboard');
-              } else {
-                navigate('/user/dashboard');
-              }
-            }} className="group flex items-center gap-3 p-3 rounded-xl text-amber-50 hover:bg-[#4E342E] hover:text-white transition-all duration-200 text-left">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-hover:scale-105" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
-              {userData?.role === 'admin' ? 'Dashboard' : 'Products'}
-            </button>
+              {/* Cart */}
+              <button
+                onClick={() => navigate('/cart')}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-amber-100 hover:bg-white/10 hover:text-white transition-all group"
+              >
+                <FaShoppingCart size={18} className="group-hover:scale-110 transition-transform" />
+                <span className="font-medium">My Cart</span>
+                {cartCount > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
 
-            <button onClick={() => navigate('/orders')} className="group flex items-center gap-3 p-3 rounded-xl text-amber-50 hover:bg-[#4E342E] hover:text-white transition-all duration-200 text-left">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 group-hover:scale-105" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-              Orders
+              {/* Orders */}
+              <button
+                onClick={() => navigate('/orders')}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-amber-100 hover:bg-white/10 hover:text-white transition-all group"
+              >
+                <FaBox size={18} className="group-hover:scale-110 transition-transform" />
+                <span className="font-medium">My Orders</span>
+              </button>
+
+              {/* Profile - Active */}
+              <button
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30 transition-all"
+              >
+                <FaUser size={18} />
+                <span className="font-medium">My Profile</span>
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="my-6 border-t border-white/10"></div>
+
+            {/* Logout */}
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-all group"
+            >
+              <FaSignOutAlt size={18} className="group-hover:scale-110 transition-transform" />
+              <span className="font-medium">Logout</span>
             </button>
           </nav>
 
-          <div className="mt-auto border-t border-[#795548] pt-4">
-            <button onClick={() => navigate('/')} className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-[#4E342E] text-amber-50 hover:bg-[#3E2723] hover:text-white transition-all duration-200">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
-              Home Page
-            </button>
+          {/* Footer */}
+          <div className="p-4 border-t border-white/10">
+            <div className="text-center">
+              <p className="text-amber-200/60 text-xs">© 2025 BakeMate</p>
+              <p className="text-amber-200/40 text-xs">Fresh Baked with Love</p>
+            </div>
           </div>
         </aside>
 
-        {/* Main Content */}
-        {/* Main Content */}
-        <main className="flex-1 bg-amber-50 p-8 flex items-center justify-center">
-          <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full overflow-hidden border border-amber-100">
+        {/* Overlay for mobile */}
+        {sidebarCollapsed && (
+          <div
+            className="md:hidden fixed inset-0 bg-black/50 z-20"
+            onClick={() => setSidebarCollapsed(false)}
+          />
+        )}
+
+        {/* 👤 Main Content */}
+        <main className="flex-1 p-4 md:p-6 lg:p-8 flex items-start justify-center">
+          <div className="bg-white rounded-2xl shadow-sm max-w-2xl w-full overflow-hidden border border-gray-100">
             {/* Header Banner */}
-            <div className="bg-gradient-to-r from-amber-600 to-orange-500 h-32 relative">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 h-32 relative">
+              <div className="absolute inset-0 bg-black/10"></div>
               <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2">
-                <div className="w-24 h-24 rounded-full border-4 border-white bg-white shadow-md overflow-hidden flex items-center justify-center">
-                  {/* Placeholder Logic for Image or Initial */}
+                <div className="w-24 h-24 rounded-full border-4 border-white bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg overflow-hidden flex items-center justify-center">
                   {userData?.image ? (
                     <img src={userData.image} alt="User" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-3xl font-bold text-amber-700">{formData.name ? formData.name[0].toUpperCase() : 'U'}</span>
+                    <span className="text-4xl font-bold text-white">{formData.name ? formData.name[0].toUpperCase() : 'U'}</span>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="pt-16 pb-8 px-8 text-center">
+            <div className="pt-16 pb-6 px-6 md:px-8 text-center">
               <h3 className="text-2xl font-bold text-gray-800">{formData.name || 'User Name'}</h3>
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 mt-2 uppercase tracking-wide">
+              <span className="inline-block px-4 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 mt-2 uppercase tracking-wide">
                 {formData.role}
               </span>
             </div>
 
-            <div className="px-8 pb-8">
+            <div className="px-6 md:px-8 pb-8">
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-gray-600 font-medium mb-1 text-sm">Full Name</label>
+                    <label className="block text-gray-600 font-medium mb-2 text-sm">Full Name</label>
                     <input
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-700 ${!isEditing ? 'bg-gray-100 cursor-not-allowed border-gray-200' : 'bg-gray-50 border-gray-300'}`}
+                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 text-gray-700 transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed border-gray-200' : 'bg-white border-gray-300'}`}
                       placeholder="John Doe"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-600 font-medium mb-1 text-sm">Email Address</label>
+                    <label className="block text-gray-600 font-medium mb-2 text-sm">Email Address</label>
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
                       disabled={!isEditing}
-                      className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-700 ${!isEditing ? 'bg-gray-100 cursor-not-allowed border-gray-200' : 'bg-gray-50 border-gray-300'}`}
+                      className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 text-gray-700 transition-all ${!isEditing ? 'bg-gray-50 cursor-not-allowed border-gray-200' : 'bg-white border-gray-300'}`}
                       placeholder="john@example.com"
                     />
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100 mt-2">
+                {/* Password Change Section */}
+                <div className="pt-6 mt-6 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordForm(!showPasswordForm)}
+                    className="flex items-center gap-2 text-amber-600 hover:text-amber-700 font-medium text-sm mb-4 px-4 py-2 rounded-lg hover:bg-amber-50 transition-colors"
+                  >
+                    <FaLock size={14} />
+                    {showPasswordForm ? 'Hide Password Change' : 'Change Password'}
+                  </button>
+
+                  {showPasswordForm && (
+                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-xl space-y-4 border border-amber-100">
+                      <div>
+                        <label className="block text-gray-600 font-medium mb-2 text-sm">Current Password</label>
+                        <div className="relative">
+                          <input
+                            type={showPasswords.current ? "text" : "password"}
+                            value={passwordData.currentPassword}
+                            onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                            className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 bg-white"
+                            placeholder="Enter current password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-amber-600 transition-colors"
+                          >
+                            {showPasswords.current ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-gray-600 font-medium mb-2 text-sm">New Password</label>
+                        <div className="relative">
+                          <input
+                            type={showPasswords.new ? "text" : "password"}
+                            value={passwordData.newPassword}
+                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                            className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 bg-white"
+                            placeholder="Enter new password (min 8 characters)"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-amber-600 transition-colors"
+                          >
+                            {showPasswords.new ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-gray-600 font-medium mb-2 text-sm">Confirm New Password</label>
+                        <div className="relative">
+                          <input
+                            type={showPasswords.confirm ? "text" : "password"}
+                            value={passwordData.confirmPassword}
+                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                            className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 bg-white"
+                            placeholder="Confirm new password"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-amber-600 transition-colors"
+                          >
+                            {showPasswords.confirm ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handlePasswordChange}
+                        className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all font-medium"
+                      >
+                        Update Password
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100 mt-2">
                   {!isEditing ? (
                     <button
                       type="button"
                       onClick={() => setIsEditing(true)}
-                      className="flex-1 bg-amber-600 text-white px-6 py-2.5 rounded-lg hover:bg-amber-700 transition-colors font-medium shadow-md"
+                      className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all font-medium"
                     >
+                      <FaEdit size={16} />
                       Edit Profile
                     </button>
                   ) : (
-                    <div className="flex flex-1 gap-4">
-                      <button type="submit" className="flex-1 bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 transition-colors font-medium shadow-md">
-                        Save Changes
+                    <div className="flex flex-1 gap-3">
+                      <button
+                        type="submit"
+                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all font-medium"
+                      >
+                        <FaSave size={16} />
+                        Save
                       </button>
                       <button
                         type="button"
                         onClick={() => {
                           setIsEditing(false);
-                          // Reset form data to original user data
                           setFormData({
                             name: userData.name,
                             email: userData.email,
                             role: userData.role || 'user'
                           });
                         }}
-                        className="flex-1 bg-gray-500 text-white px-6 py-2.5 rounded-lg hover:bg-gray-600 transition-colors font-medium shadow-md"
+                        className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all font-medium"
                       >
+                        <FaTimes size={16} />
                         Cancel
                       </button>
                     </div>
@@ -242,8 +481,9 @@ const UserProfile = () => {
                   <button
                     type="button"
                     onClick={handleDelete}
-                    className="flex-1 bg-white text-red-500 border border-red-200 px-6 py-2.5 rounded-lg hover:bg-red-50 hover:border-red-300 transition-all font-medium"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 bg-white text-red-500 border-2 border-red-200 rounded-xl hover:bg-red-50 hover:border-red-300 transition-all font-medium"
                   >
+                    <FaTrash size={14} />
                     Delete Account
                   </button>
                 </div>

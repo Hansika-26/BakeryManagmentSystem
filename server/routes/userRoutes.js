@@ -1,15 +1,16 @@
 import express from 'express';
-import { getAllUsers, getCurrentUser, updateUserProfile, deleteUserProfile  } from '../controllers/userController.js';
+import { getAllUsers, getCurrentUser, updateUserProfile, deleteUserProfile, changePassword } from '../controllers/userController.js';
 import { authenticateUser } from '../middleware/userAuth.js';
 //import User from '../model/userModel.js';
 //import bcrypt from 'bcryptjs';
 
 const userRouter = express.Router();
 
-userRouter.get('/all', getAllUsers); 
+userRouter.get('/all', getAllUsers);
 
 userRouter.get("/data", authenticateUser, getCurrentUser);
 userRouter.put("/profile", authenticateUser, updateUserProfile);
+userRouter.put("/change-password", authenticateUser, changePassword);
 userRouter.delete("/profile", authenticateUser, deleteUserProfile);
 
 // Delete user profile

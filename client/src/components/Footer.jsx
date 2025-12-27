@@ -24,16 +24,26 @@ const Footer = () => {
                 <div>
                     <h3 className="text-xl font-semibold mb-6 text-white border-b-2 border-amber-600 inline-block pb-2">Quick Links</h3>
                     <ul className="space-y-3">
-                        {['Home', 'Products', 'Orders', 'About Us', 'Contact'].map((item) => (
-                            <li key={item}>
-                                <button
-                                    onClick={() => navigate(item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`)}
-                                    className="hover:text-amber-400 transition-colors flex items-center gap-2"
-                                >
-                                    <span className="text-amber-600">›</span> {item}
-                                </button>
-                            </li>
-                        ))}
+                        <li>
+                            <button onClick={() => navigate('/')} className="hover:text-amber-400 transition-colors flex items-center gap-2">
+                                <span className="text-amber-600">›</span> Home
+                            </button>
+                        </li>
+                        <li>
+                            <button onClick={() => navigate('/product')} className="hover:text-amber-400 transition-colors flex items-center gap-2">
+                                <span className="text-amber-600">›</span> Products
+                            </button>
+                        </li>
+                        <li>
+                            <button onClick={() => navigate('/about')} className="hover:text-amber-400 transition-colors flex items-center gap-2">
+                                <span className="text-amber-600">›</span> About Us
+                            </button>
+                        </li>
+                        <li>
+                            <button onClick={() => navigate('/contact')} className="hover:text-amber-400 transition-colors flex items-center gap-2">
+                                <span className="text-amber-600">›</span> Contact
+                            </button>
+                        </li>
                     </ul>
                 </div>
 

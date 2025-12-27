@@ -7,6 +7,12 @@ import authRouter from './routes/authRoutes.js';
 import userRouter from "./routes/userRoutes.js";
 import categoryRoutes from './routes/categoryRoutes.js';
 import productRoutes from './routes/productRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+// Import models to register schemas
+import './model/userModel.js';
+import './model/productModel.js';
+import './model/categoryModel.js';
+import './model/orderModel.js';
 
 //const cors = require('cors');
 
@@ -41,6 +47,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Global error handler (important!)
 app.use((err, req, res, next) => {

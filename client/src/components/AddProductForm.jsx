@@ -48,11 +48,11 @@ const AddProductForm = () => {
   return (
     <form onSubmit={handleSubmit} className="p-6 bg-white shadow rounded space-y-4 max-w-xl mx-auto">
       <h2 className="text-xl font-semibold">Add Product</h2>
-      <input type="text" placeholder="Name" required className="input" onChange={e => setForm({...form, name: e.target.value})} />
-      <textarea placeholder="Description" className="input" onChange={e => setForm({...form, description: e.target.value})} />
-      <input type="number" placeholder="Price" required className="input" onChange={e => setForm({...form, price: e.target.value})} />
-      <input type="file" required onChange={e => setForm({...form, image: e.target.files[0]})} />
-      <select required onChange={e => setForm({...form, category: e.target.value})} className="input">
+      <input type="text" placeholder="Name" required className="input" onChange={e => setForm({ ...form, name: e.target.value })} />
+      <textarea placeholder="Description" className="input" onChange={e => setForm({ ...form, description: e.target.value })} />
+      <input type="number" placeholder="Price" required className="input" onChange={e => setForm({ ...form, price: e.target.value })} />
+      <input type="file" required onChange={e => setForm({ ...form, image: e.target.files[0] })} />
+      <select required onChange={e => setForm({ ...form, category: e.target.value })} className="input">
         <option value="">Select Category</option>
         {categories.map(cat => (
           <option value={cat._id} key={cat._id}>{cat.name}</option>

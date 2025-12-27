@@ -46,23 +46,22 @@ export const registerSchema = Joi.object({
 
 export const loginValidator = Joi.object({
 
-    email: Joi.string()
-      .email({ tlds: { allow: false } }) // general email validation
-      .pattern(/@gmail\.com$/)           // must be a Gmail address
-      .required()
-      .messages({
-        'string.email': 'Invalid email format',
-        'string.pattern.base': 'Email must be a valid Gmail address',
-        'any.required': 'Email is required',
-      }),
+  email: Joi.string()
+    .email({ tlds: { allow: false } }) // general email validation
+    .required()
+    .messages({
+      'string.email': 'Invalid email format',
+      'any.required': 'Email is required',
+    }),
 
-    password: Joi.string()
-      .pattern(/^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{6,}$/)
-      .required()
-      .messages({
-        'string.pattern.base': 'Password must contain letters, numbers, and special characters',
-        'any.required': 'Password is required',
-      }),
+  password: Joi.string()
+    .min(6)
+    .max(128)
+    .required()
+    .messages({
+      'string.min': 'Password must be at least 6 characters',
+      'any.required': 'Password is required',
+    }),
 
 })
 
@@ -88,5 +87,37 @@ export const updateUserProfileValidator = Joi.object({
     .messages({
       'string.pattern.base':
         'Password must include letters, numbers, and special characters',
+    }),
+});
+
+export const resetPasswordSchema = Joi.object({
+  email: Joi.string()
+    .trim()
+    .email()
+    .required()
+    .messages({
+      'string.email': 'Email must be a valid email address',
+      'string.empty': 'Email is required',
+      'any.required': 'Email is required',
+    }),
+
+  otp: Joi.string()
+    .length(6)
+    .pattern(/^\d{6}$/)
+    .required()
+    .messages({
+      'string.length': 'OTP must be 6 digits',
+      'string.pattern.base': 'OTP must be numeric',
+      'any.required': 'OTP is required',
+    }),
+
+  newPassword: Joi.string()
+    .min(6)
+    .max(128)
+    .required()
+    .messages({
+      'string.min': 'Password must be at least 6 characters long',
+      'string.empty': 'Password is required',
+      'any.required': 'Password is required',
     }),
 });

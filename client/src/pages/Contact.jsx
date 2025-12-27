@@ -1,7 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
+import { toast } from 'react-toastify';
 
 const Contact = () => {
+    const [contactForm, setContactForm] = useState({
+        firstName: '', lastName: '', email: '', message: ''
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleContactSubmit = (e) => {
+        e.preventDefault();
+        if (!contactForm.firstName || !contactForm.email || !contactForm.message) {
+            toast.error('Please fill in all required fields');
+            return;
+        }
+        setIsSubmitting(true);
+        // Simulate sending
+        setTimeout(() => {
+            toast.success('Message sent! We\'ll get back to you soon.');
+            setContactForm({ firstName: '', lastName: '', email: '', message: '' });
+            setIsSubmitting(false);
+        }, 1000);
+    };
+
     return (
         <div className="min-h-screen bg-amber-50">
             <Navbar />
@@ -54,27 +75,58 @@ const Contact = () => {
                     {/* Contact Form */}
                     <div className="bg-white p-8 rounded-2xl shadow-lg border border-amber-100">
                         <h2 className="text-2xl font-bold text-amber-800 mb-6">Send a Message</h2>
-                        <form className="space-y-4">
+                        <form onSubmit={handleContactSubmit} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                                    <input type="text" className="w-full px-4 py-2 bg-amber-50/50 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500" placeholder="John" />
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                                    <input
+                                        type="text"
+                                        value={contactForm.firstName}
+                                        onChange={(e) => setContactForm({ ...contactForm, firstName: e.target.value })}
+                                        className="w-full px-4 py-2 bg-amber-50/50 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                        placeholder="John"
+                                        required
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                                    <input type="text" className="w-full px-4 py-2 bg-amber-50/50 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500" placeholder="Doe" />
+                                    <input
+                                        type="text"
+                                        value={contactForm.lastName}
+                                        onChange={(e) => setContactForm({ ...contactForm, lastName: e.target.value })}
+                                        className="w-full px-4 py-2 bg-amber-50/50 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                        placeholder="Doe"
+                                    />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input type="email" className="w-full px-4 py-2 bg-amber-50/50 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500" placeholder="john@example.com" />
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                                <input
+                                    type="email"
+                                    value={contactForm.email}
+                                    onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                                    className="w-full px-4 py-2 bg-amber-50/50 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                    placeholder="john@example.com"
+                                    required
+                                />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                                <textarea rows="4" className="w-full px-4 py-2 bg-amber-50/50 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500" placeholder="How can we help you?"></textarea>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Message *</label>
+                                <textarea
+                                    rows="4"
+                                    value={contactForm.message}
+                                    onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                                    className="w-full px-4 py-2 bg-amber-50/50 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                    placeholder="How can we help you?"
+                                    required
+                                ></textarea>
                             </div>
-                            <button type="button" className="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors shadow-md">
-                                Send Message
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors shadow-md disabled:opacity-50"
+                            >
+                                {isSubmitting ? 'Sending...' : 'Send Message'}
                             </button>
                         </form>
                     </div>

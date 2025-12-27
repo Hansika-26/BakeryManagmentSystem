@@ -1,5 +1,5 @@
 import Category from "../model/categoryModel.js";
-import { addCategoryValidator, updateCategoryValidator } from '../validators/categoryValidation.js'; 
+import { addCategoryValidator, updateCategoryValidator } from '../validators/categoryValidation.js';
 
 export const getCategories = async (req, res) => {
   try {
@@ -8,7 +8,7 @@ export const getCategories = async (req, res) => {
     if (!categories || categories.length === 0) {
       return res.json({ success: false, message: "No categories found" });
     }
-   res.status(200).json(categories);
+    res.status(200).json(categories);
 
   } catch (error) {
     res.json({ success: false, message: error.message });
@@ -20,7 +20,7 @@ export const addCategory = async (req, res) => {
     //TODO: Validate the request body
     const { name } = req.body;
 
-   const { error } = addCategoryValidator.validate({ name });
+    const { error } = addCategoryValidator.validate({ name });
 
     if (error) {
       return res.status(400).json({ success: false, message: error.details[0].message });

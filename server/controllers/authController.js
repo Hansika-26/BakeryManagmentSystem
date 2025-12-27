@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import userModel from '../model/userModel.js';
 import transporter from '../config/nodemailer.js';
-import { registerSchema, loginValidator } from '../validators/authValidator.js';
+import { registerSchema, loginValidator, resetPasswordSchema } from '../validators/authValidator.js';
 
 // Generate JWT Token
 const generateToken = (user) => {
@@ -16,7 +16,7 @@ const generateToken = (user) => {
 //  Register User
 export const register = async (req, res) => {
 
- // Validate request using Joi schema
+  // Validate request using Joi schema
   const { error, value } = registerSchema.validate(req.body, { abortEarly: false });
 
   if (error) {
@@ -60,7 +60,7 @@ export const register = async (req, res) => {
       from: process.env.SENDER_EMAIL,
       to: email,
       subject: 'Welcome to our service',
-      text: `Welcome to our website. Your account has been created with email: ${email}`, 
+      text: `Welcome to our website. Your account has been created with email: ${email}`,
     };
 
     try {
@@ -85,13 +85,13 @@ export const login = async (req, res) => {
     return res.status(400).json({ success: false, message: error.details[0].message });
   }
 
-   
+
 
   if (!email || !password)
     return res.status(400).json({ success: false, message: 'Email and password are required' });
 
   try {
-    const user = await userModel.findOne({ email }); 
+    const user = await userModel.findOne({ email });
     if (!user) return res.status(400).json({ success: false, message: 'Invalid email' });
 
 
@@ -108,14 +108,14 @@ export const login = async (req, res) => {
     });
 
     res.status(200).json({
-    msg: "User logged in",
-    user: {
-      role: user.role,
-      name: user.fullName,
-      email: user.email,
-    },
-  });
-  
+      msg: "User logged in",
+      user: {
+        role: user.role,
+        name: user.name,
+        email: user.email,
+      },
+    });
+
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -235,11 +235,15 @@ export const sendResetOtp = async (req, res) => {
 
 //  Reset Password using OTP
 export const resetPassword = async (req, res) => {
-  const { email, otp, newPassword } = req.body;
+  // Validate request using Joi schema
+  const { error, value } = resetPasswordSchema.validate(req.body, { abortEarly: false });
 
-  if (!email || !otp || !newPassword) {
-    return res.status(400).json({ success: false, message: 'Email, OTP, and new password are required' });
+  if (error) {
+    const errors = error.details.map(detail => detail.message);
+    return res.status(400).json({ success: false, message: 'Validation Error', errors });
   }
+
+  const { email, otp, newPassword } = value;
 
   try {
     const user = await userModel.findOne({ email });

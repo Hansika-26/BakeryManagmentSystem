@@ -95,17 +95,17 @@ const ResetPasswordModal = ({ isOpen, onClose }) => {
           <form onSubmit={onSubmitEmail}>
             <h1 className="text-gray-800 text-2xl font-semibold text-center mb-4">Reset Password</h1>
             <p className="text-center mb-6 text-gray-600">Enter your registered email address</p>
-                          <div className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-gray-100 border border-gray-300">
-                <img src={assets.mail_icon} alt="" className="w-5 h-3" />
-                <input
-                  type="email"
-                  placeholder="Email id"
-                  className="bg-transparent outline-none text-gray-800 placeholder-gray-500 w-full"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+            <div className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-gray-100 border border-gray-300">
+              <img src={assets.mail_icon} alt="" className="w-5 h-3" />
+              <input
+                type="email"
+                placeholder="Email id"
+                className="bg-transparent outline-none text-gray-800 placeholder-gray-500 w-full"
+                value={email}
+                onChange={(e) => setEmail(e.target.value.trim())}
+                required
+              />
+            </div>
             <button className="w-full py-2.5 bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-600 hover:to-gray-800 text-white rounded-full mt-3 transition-all duration-200">
               Submit
             </button>
@@ -116,7 +116,7 @@ const ResetPasswordModal = ({ isOpen, onClose }) => {
         {isEmailSent && !isOtpSubmited && (
           <form onSubmit={onSubmitOtp}>
             <h1 className="text-gray-800 text-2xl font-semibold text-center mb-4">Reset Password OTP</h1>
-                         <p className="text-center mb-6 text-gray-600">Enter the 6-digit code sent to your email id.</p>
+            <p className="text-center mb-6 text-gray-600">Enter the 6-digit code sent to your email id.</p>
             <div className="flex justify-between mb-8" onPaste={handlePaste}>
               {Array(6)
                 .fill(0)
@@ -127,13 +127,13 @@ const ResetPasswordModal = ({ isOpen, onClose }) => {
                     maxLength="1"
                     required
                     ref={(el) => (inputRefs.current[index] = el)}
-                                         className="w-10 h-10 bg-gray-100 border border-gray-300 text-gray-800 text-center text-xl rounded-md"
+                    className="w-10 h-10 bg-gray-100 border border-gray-300 text-gray-800 text-center text-xl rounded-md"
                     onInput={(e) => handleInput(e, index)}
                     onKeyDown={(e) => handleKeyDown(e, index)}
                   />
                 ))}
             </div>
-                         <button className="w-full py-2.5 bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-600 hover:to-gray-800 text-white rounded-full mt-3 transition-all duration-200">
+            <button className="w-full py-2.5 bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-600 hover:to-gray-800 text-white rounded-full mt-3 transition-all duration-200">
               Submit
             </button>
           </form>
@@ -143,17 +143,17 @@ const ResetPasswordModal = ({ isOpen, onClose }) => {
         {isEmailSent && isOtpSubmited && (
           <form onSubmit={onSubmitNewPassword}>
             <h1 className="text-gray-800 text-2xl font-semibold text-center mb-4">New Password</h1>
-                         <p className="text-center mb-6 text-gray-600">Enter your new password below</p>
-                         <div className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-gray-100 border border-gray-300">
-               <img src={assets.lock_icon} alt="" className="w-5 h-3" />
-               <input
-                 type="password"
-                 placeholder="Password"
-                 className="bg-transparent outline-none text-gray-800 placeholder-gray-500 w-full"
-                 value={newPassword}
-                 onChange={(e) => setNewPassword(e.target.value)}
-                 required
-                             />
+            <p className="text-center mb-6 text-gray-600">Enter your new password below</p>
+            <div className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-gray-100 border border-gray-300">
+              <img src={assets.lock_icon} alt="" className="w-5 h-3" />
+              <input
+                type="password"
+                placeholder="Password"
+                className="bg-transparent outline-none text-gray-800 placeholder-gray-500 w-full"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+              />
             </div>
             <button className="w-full py-2.5 bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-600 hover:to-gray-800 text-white rounded-full mt-3 transition-all duration-200">
               Submit

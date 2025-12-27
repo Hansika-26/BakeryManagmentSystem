@@ -5,7 +5,7 @@ import {
 } from "../errors/customErrors.js";
 
 export const authenticateUser = (req, res, next) => {
- // console.log("authenticating user");
+  // console.log("authenticating user");
   const { token } = req.cookies;
   if (!token) throw new UnauthenticatedError("authentication Invalid");
 
@@ -22,14 +22,17 @@ export const authenticateUser = (req, res, next) => {
 export const authorizePermissions = (...roles) => {
   return (req, res, next) => {
     console.log("Authorize roles required:", roles);
+    console.log("User role:", req.user?.role);
+
     if (!req.user) {
-      return next(new UnauthorizedError("No user info found in request"));
+      throw new UnauthorizedError("No user info found in request");
     }
 
-    console.log("User role:", req.user.role);
     if (!roles.includes(req.user.role)) {
-      return next(new UnauthorizedError("Not authorized to access this route"));
+      throw new UnauthorizedError("Not authorized to access this route");
     }
     next();
   };
 };
+
+export default authenticateUser;

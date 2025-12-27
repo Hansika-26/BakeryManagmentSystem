@@ -29,10 +29,10 @@ export const addProductValidator = Joi.object({
     }),
 
   image: Joi.string()
-    
+
     .required()
     .messages({
-      
+
       'any.required': 'Image URL is required',
     }),
 
@@ -61,8 +61,8 @@ export const updateProductValidator = Joi.object({
 
 
   image: Joi.string().required().messages({
-  'any.required': 'Image is required'
-}),
+    'any.required': 'Image is required'
+  }),
 
 
 

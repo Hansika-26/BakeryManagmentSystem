@@ -8,7 +8,7 @@ import AdminSidebar from '../components/AdminSidebar';
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
-  const { backendUrl } = useContext(AppContext);
+  const { backendUrl, setIsLoggedin, setUserData } = useContext(AppContext);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -16,9 +16,24 @@ const AdminDashboard = () => {
   const [active, setActive] = useState('view');
   const navigate = useNavigate();
 
+  const handleLogout = async () => {
+    try {
+      const { data } = await axios.post(`${backendUrl}/api/auth/logout`, {}, { withCredentials: true });
+      if (data.success) {
+        setIsLoggedin(false);
+        setUserData(null);
+        toast.success("Logged out successfully");
+        navigate('/');
+      }
+    } catch (error) {
+      toast.error("Logout failed");
+    }
+  };
+
   const loadProducts = async () => {
     try {
-      const res = await axios.get(`${backendUrl}/api/products`);
+      // Admin should see all products including hidden ones
+      const res = await axios.get(`${backendUrl}/api/products?showAll=true`);
       setProducts(res.data.products);
     } catch (err) {
       toast.error('Failed to load products');
@@ -40,12 +55,32 @@ const AdminDashboard = () => {
   }, []);
 
   const deleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+      return;
+    }
     try {
       await axios.delete(`${backendUrl}/api/products/${id}`, { withCredentials: true });
-      toast.success('Deleted');
+      toast.success('Product deleted successfully');
       loadProducts();
     } catch (err) {
       toast.error('Delete failed');
+    }
+  };
+
+  const toggleVisibility = async (productId, currentStatus) => {
+    try {
+      const res = await axios.patch(
+        `${backendUrl}/api/products/${productId}/toggle-visibility`,
+        {},
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        toast.success(res.data.message);
+        loadProducts();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to toggle visibility');
     }
   };
 
@@ -122,25 +157,29 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* 🌟 Navbar */}
-      <nav className="bg-white shadow p-4 flex justify-between items-center sticky top-0 z-30 w-full">
-        <div className="flex items-center space-x-3">
-          <img src={assets.LogoImage} alt="Bakery Logo" className="h-10" />
-          <h1 className="text-2xl font-bold text-gray-800">Bakery Admin Dashboard</h1>
+    <div className="min-h-screen bg-gray-100">
+      {/* 🌟 Streamlined Admin Navbar */}
+      <nav className="bg-white shadow-md px-6 py-4 flex justify-between items-center sticky top-0 z-30 w-full">
+        <div className="flex items-center gap-3">
+          <img src={assets.LogoImage} alt="Bakery Logo" className="h-12 w-12 rounded-full border-2 border-amber-500 shadow-md" />
         </div>
-        <div className="space-x-6 font-medium text-gray-700 text-sm">
-          <button onClick={() => navigate('/')} className="hover:text-green-600">Home</button>
-          <button onClick={() => navigate('/orders')} className="hover:text-green-600">Orders</button>
-          <button onClick={() => navigate('/FAQ')} className="hover:text-green-600">FAQ</button>
-          <button onClick={() => navigate('/contact')} className="hover:text-green-600">Contact</button>
-          <button onClick={() => navigate('/about')} className="hover:text-green-600">About</button>
-          <button onClick={() => navigate('/login')} className="hover:text-green-600 bg-gray-300 p-2 rounded w-38 h-9">LogOut</button>
+
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-600 hidden md:block">Welcome, Admin</span>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Logout
+          </button>
         </div>
       </nav>
 
       <div className="flex">
-        <AdminSidebar setActive={setActive} />
+        <AdminSidebar setActive={setActive} activeTab={active} />
         <div className="flex-1 bg-amber-50 p-6 min-h-[calc(100vh-72px)]">
           {active === 'add' ? (
             <main className="flex-1 bg-amber-50 p-8 flex items-center justify-center">
@@ -166,32 +205,60 @@ const AdminDashboard = () => {
             </main>
           ) : (
             <>
-              <h2 className="text-2xl font-bold mb-6 text-amber-900 border-b border-amber-200 pb-2"> Manage Products</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {products.map(prod => (
-                  <div key={prod._id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden border border-amber-100 flex flex-col group">
-                    <div className="relative h-48 overflow-hidden">
-                      <img src={prod.image} alt={prod.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-full text-xs font-bold text-amber-800 shadow-sm">
-                        {prod.category?.name}
+              <h2 className="text-2xl font-bold mb-6 text-amber-900 border-b border-amber-200 pb-2">🧁 Manage Products</h2>
+
+              {products.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
+                  <div className="text-6xl mb-4">📦</div>
+                  <p className="text-gray-500 text-lg font-medium">No products found</p>
+                  <p className="text-gray-400 text-sm mt-1">Click "Add Product" to create your first product</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {products.map(prod => (
+                    <div key={prod._id} className={`bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden border flex flex-col group ${prod.isActive ? 'border-amber-100' : 'border-red-200 bg-gray-50'}`}>
+                      <div className="relative h-48 overflow-hidden">
+                        <img src={prod.image} alt={prod.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div className="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-full text-xs font-bold text-amber-800 shadow-sm">
+                          {prod.category?.name}
+                        </div>
+                        {/* Visibility Status Badge */}
+                        <div className="absolute top-2 left-2">
+                          <span className={`px-2 py-1 text-xs rounded-full font-semibold ${prod.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {prod.isActive ? '👁️ Visible' : '🚫 Hidden'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-4 flex-1 flex flex-col">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-bold text-lg text-gray-800 line-clamp-1">{prod.name}</h3>
+                          <span className="text-green-700 font-bold whitespace-nowrap">Rs. {prod.price}</span>
+                        </div>
+                        <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">{prod.description}</p>
+
+                        <div className="space-y-2 mt-auto">
+                          {/* Toggle Visibility Button */}
+                          <button
+                            onClick={() => toggleVisibility(prod._id, prod.isActive)}
+                            className={`w-full py-2 rounded-lg font-medium transition-colors ${prod.isActive
+                                ? 'bg-orange-100 text-orange-900 hover:bg-orange-200'
+                                : 'bg-green-100 text-green-900 hover:bg-green-200'
+                              }`}
+                          >
+                            {prod.isActive ? '🚫 Hide from Customers' : '👁️ Show to Customers'}
+                          </button>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <button onClick={() => handleEdit(prod)} className="bg-amber-100 text-amber-900 py-2 rounded-lg font-medium hover:bg-amber-200 transition-colors">Edit</button>
+                            <button onClick={() => deleteProduct(prod._id)} className="bg-red-50 text-red-600 py-2 rounded-lg font-medium hover:bg-red-100 transition-colors">Delete</button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-
-                    <div className="p-4 flex-1 flex flex-col">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-lg text-gray-800 line-clamp-1">{prod.name}</h3>
-                        <span className="text-green-700 font-bold whitespace-nowrap">Rs. {prod.price}</span>
-                      </div>
-                      <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">{prod.description}</p>
-
-                      <div className="grid grid-cols-2 gap-3 mt-auto">
-                        <button onClick={() => handleEdit(prod)} className="bg-amber-100 text-amber-900 py-2 rounded-lg font-medium hover:bg-amber-200 transition-colors">Edit</button>
-                        <button onClick={() => deleteProduct(prod._id)} className="bg-red-50 text-red-600 py-2 rounded-lg font-medium hover:bg-red-100 transition-colors">Delete</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>
